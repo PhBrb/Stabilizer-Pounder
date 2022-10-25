@@ -44,6 +44,10 @@ use stabilizer::{
         afe::Gain,
         dac::{Dac0Output, Dac1Output, DacCode},
         hal,
+        pounder::{
+            attenuators::AttenuatorInterface
+        },
+        setup::PounderDevices as Pounder,
         signal_generator::{self, SignalGenerator},
         timers::SamplingTimer,
         DigitalInput0, DigitalInput1, SystemTimer, Systick, AFE0, AFE1,
@@ -73,6 +77,14 @@ const SAMPLE_PERIOD: f32 =
 
 #[derive(Clone, Copy, Debug, Miniconf)]
 pub struct Settings {
+
+
+    pwnd_enable: bool,
+    pwnd_channel: u32,
+    pwnd_ftw: u32,
+    pwnd_pow: u16,
+    pwnd_acr: u32,
+
     /// Configure the Analog Front End (AFE) gain.
     ///
     /// # Path
@@ -147,6 +159,11 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            pwnd_enable: false,
+            pwnd_channel: 0,
+            pwnd_ftw: 0,
+            pwnd_pow: 0,
+            pwnd_acr: 0,
             // Analog frontend programmable gain amplifier gains (G1, G2, G5, G10)
             afe: [Gain::G1, Gain::G1],
             // IIR filter tap gains are an array `[b0, b1, b2, a1, a2]` such that the
@@ -183,6 +200,7 @@ mod app {
         settings: Settings,
         telemetry: TelemetryBuffer,
         signal_generator: [SignalGenerator; 2],
+        pounder: Option<Pounder>,
     }
 
     #[local]
@@ -202,7 +220,7 @@ mod app {
         let clock = SystemTimer::new(|| monotonics::now().ticks() as u32);
 
         // Configure the microcontroller
-        let (stabilizer, _pounder) = hardware::setup::setup(
+        let (stabilizer, pounder) = hardware::setup::setup(
             c.core,
             c.device,
             clock,
@@ -243,6 +261,7 @@ mod app {
                         .unwrap(),
                 ),
             ],
+            pounder,
         };
 
         let mut local = Local {
@@ -401,13 +420,108 @@ mod app {
         }
     }
 
-    #[task(priority = 1, local=[afes], shared=[network, settings, signal_generator])]
+    #[task(priority = 1, local=[afes], shared=[network, settings, signal_generator, pounder])]
     fn settings_update(mut c: settings_update::Context) {
         let settings = c.shared.network.lock(|net| *net.miniconf.settings());
         c.shared.settings.lock(|current| *current = settings);
 
         c.local.afes.0.set_gain(settings.afe[0]);
         c.local.afes.1.set_gain(settings.afe[1]);
+
+
+        if settings.pwnd_enable == true {
+
+            let mut channel = ad9959::Channel::ONE;
+            if settings.pwnd_channel == 1 {
+                channel = ad9959::Channel::TWO;
+            } else if settings.pwnd_channel == 2 {
+                channel = ad9959::Channel::THREE;
+            } else if settings.pwnd_channel == 3 {
+                channel = ad9959::Channel::FOUR;
+            } else if settings.pwnd_channel == 4 {
+                channel = ad9959::Channel::CH1;
+            }
+
+            let ftw = Some(settings.pwnd_ftw);
+
+
+            let pow = Some(settings.pwnd_pow);
+
+
+            let acr = Some(settings.pwnd_acr);
+
+
+
+
+
+            // Update Pounder configurations
+            c.shared.pounder.lock(|pounder| {
+                if let 
+                    Some(Pounder {
+                        pounder: pounder_devices,
+                        dds_output: dds,
+                        ..
+                    }
+                ) = pounder
+                {
+
+                    pounder_devices
+                        .set_attenuation(
+                            stabilizer::hardware::pounder::Channel::Out0,
+                            2.0,
+                        )
+                        .unwrap();
+                    pounder_devices
+                        .set_attenuation(
+                            stabilizer::hardware::pounder::Channel::Out1,
+                            2.0,
+                        )
+                        .unwrap();
+                    pounder_devices
+                        .set_attenuation(
+                            stabilizer::hardware::pounder::Channel::In0,
+                            2.0,
+                        )
+                        .unwrap();
+                    pounder_devices
+                        .set_attenuation(
+                            stabilizer::hardware::pounder::Channel::In1,
+                            2.0,
+                        )
+                        .unwrap();
+                
+                    let mut builder = dds.builder();
+                    builder.update_channels(channel, ftw, pow, acr);
+                    builder.write();
+                    log::info!("updated ch, ftw, acr:");
+                    log::info!("{}", settings.pwnd_channel);
+                    log::info!("{}", settings.pwnd_ftw);
+                    log::info!("{}", settings.pwnd_acr);
+                }
+
+            });
+            // system clk = 100 mhz
+            // freq = ftw * system clk / 2^32
+            // 100 mhz / 2^32 * 100000000 = 2.3 MHz
+            // calculation is incorrect, 50000000 ftw becomes 5.81 MHz
+            // match c.local.pnd {
+            //     Some(pnd) => {
+            //         let mut builder = pnd.dds_output.builder();
+            //         builder.update_channels(channel, ftw, pow, acr);
+            //         builder.write();
+            //         log::info!("updated ch, ftw, acr:");
+            //         log::info!("{}", settings.pwnd_channel);
+            //         log::info!("{}", settings.pwnd_ftw);
+            //         log::info!("{}", settings.pwnd_acr);
+                    
+            //     },
+            //     None => {},
+            // }
+        } else {
+            log::info!("no update");
+        }
+
+
 
         // Update the signal generators
         for (i, &config) in settings.signal_generator.iter().enumerate() {

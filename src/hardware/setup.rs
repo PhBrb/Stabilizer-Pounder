@@ -961,6 +961,8 @@ pub fn setup(
             )
         };
 
+        log::info!("HELLO WORLD! :)");
+
         Some(PounderDevices {
             pounder: pounder_devices,
             dds_output,
