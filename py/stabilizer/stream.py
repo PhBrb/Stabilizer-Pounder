@@ -11,11 +11,31 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from . import DAC_VOLTS_PER_LSB
+from pyqtgraph.Qt import QtGui, QtCore
+import numpy as np
+import pyqtgraph as pg
+from pyqtgraph.ptime import time
+import threading
+
+# Sample period in seconds, default 100 MHz timer clock and a reload value of 128
+SAMPLE_PERIOD = 10e-9*128
+# The number of DAC LSB codes per volt on Stabilizer outputs.
+DAC_LSB_PER_VOLT = (1 << 16) / (4.096 * 5)
+# The number of volts per ADC LSB.
+ADC_VOLTS_PER_LSB = (5.0 / 2.0 * 4.096)  / (1 << 15)
+# The number of volts per DAC LSB.
+DAC_VOLTS_PER_LSB = 1 / DAC_LSB_PER_VOLT
 
 logger = logging.getLogger(__name__)
 
 Trace = namedtuple("Trace", "values scale label")
+
+app = QtGui.QApplication([])
+p = pg.plot()
+p.setWindowTitle('live plot')
+curve = p.plot()
+data = [0]*8000
+viewbox = p.getPlotItem().getViewBox()
 
 
 def wrap(wide):
@@ -151,7 +171,12 @@ async def measure(stream, duration):
             stat.expect = wrap(frame.header.sequence + batch_count)
             stat.bytes += frame.size()
             # test conversion
-            # frame.to_si()
+            newData = frame.to_si()["adc"][0]
+            #np.mean(arr.reshape(-1, 3), axis=1)
+            newData = np.mean(newData.reshape(-1,44), axis=1)
+            for element in newData:
+                data.append(element)
+                data.pop(0)
 
     try:
         await asyncio.wait_for(_record(), timeout=duration)
@@ -179,7 +204,7 @@ async def main():
                         help="Local address to listen on")
     parser.add_argument("--maxsize", type=int, default=1,
                         help="Frame queue size")
-    parser.add_argument("--duration", type=float, default=1.,
+    parser.add_argument("--duration", type=float, default=50.,
                         help="Test duration")
     args = parser.parse_args()
 
@@ -187,7 +212,25 @@ async def main():
     _transport, stream = await StabilizerStream.open(
         (args.host, args.port), args.maxsize)
     await measure(stream, args.duration)
+    
 
+def update():
+    global curve, data, viewbox
+    xdata = np.array(data, dtype='float64')
+    curve.setData(xdata)
+    app.processEvents()
+
+
+
+
+def startNetwork():
+    asyncio.run(main())
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    thread = threading.Thread(target=startNetwork, args=())
+    thread.start()
+
+    timer = QtCore.QTimer()
+    timer.timeout.connect(update)
+    timer.start(0)
+    QtGui.QApplication.instance().exec_()
