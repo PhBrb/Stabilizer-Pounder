@@ -10,6 +10,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 
 import numpy as np
+import sys
 
 from pyqtgraph.Qt import QtGui, QtCore
 import numpy as np
@@ -34,7 +35,7 @@ app = QtGui.QApplication([])
 p = pg.plot()
 p.setWindowTitle('live plot')
 curve = p.plot()
-data = [0]*8000
+data = [0]*40000
 viewbox = p.getPlotItem().getViewBox()
 
 
@@ -173,7 +174,7 @@ async def measure(stream, duration):
             # test conversion
             newData = frame.to_si()["adc"][0]
             #np.mean(arr.reshape(-1, 3), axis=1)
-            newData = np.mean(newData.reshape(-1,44), axis=1)
+            newData = np.mean(newData.reshape(-1,11), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
             for element in newData:
                 data.append(element)
                 data.pop(0)
@@ -204,7 +205,7 @@ async def main():
                         help="Local address to listen on")
     parser.add_argument("--maxsize", type=int, default=1,
                         help="Frame queue size")
-    parser.add_argument("--duration", type=float, default=50.,
+    parser.add_argument("--duration", type=float, default=60*10,
                         help="Test duration")
     args = parser.parse_args()
 
@@ -234,3 +235,4 @@ if __name__ == "__main__":
     timer.timeout.connect(update)
     timer.start(0)
     QtGui.QApplication.instance().exec_()
+
