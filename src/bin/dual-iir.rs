@@ -439,7 +439,7 @@ mod app {
             } else if settings.pwnd_channel == 3 {
                 channel = ad9959::Channel::FOUR;
             } else if settings.pwnd_channel == 4 {
-                channel = ad9959::Channel::CH1;
+                channel = ad9959::Channel::ONE;
             }
 
             let ftw = Some(settings.pwnd_ftw);
