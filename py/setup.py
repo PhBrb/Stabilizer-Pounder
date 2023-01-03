@@ -10,5 +10,5 @@ setup(name="stabilizer",
       install_requires=[
             "numpy",
             "gmqtt",
-            "miniconf-mqtt@git+https://github.com/quartiq/miniconf@develop#subdirectory=py/miniconf-mqtt"
+            "miniconf-mqtt@git+https://github.com/quartiq/miniconf@v0.5.0#subdirectory=py/miniconf-mqtt"
       ])
