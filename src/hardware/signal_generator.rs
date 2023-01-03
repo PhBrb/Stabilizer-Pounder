@@ -42,7 +42,7 @@ impl Default for BasicConfig {
         Self {
             frequency: 1.0e3,
             symmetry: 0.5,
-            signal: Signal::Cosine,
+            signal: Signal::Triangle,
             amplitude: 0.0,
             phase: 0.0,
         }
