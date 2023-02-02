@@ -186,14 +186,19 @@ def pid_coefficients(args):
         assert args.Kdd == 0, \
                 "IIR filters with I and D^2 gain are unsupported"
         order = 1
+        kernels = [
+        	[0.5, 0.5, 0],
+        	[1, -1, 0],
+        	[1, -2, 1]
+    	]
     else:
         order = 0
+        kernels = [
+            [1, 0, 0],
+            [1, -1, 0],
+            [1, -2, 1]
+        ]
 
-    kernels = [
-        [1, 0, 0],
-        [1, -1, 0],
-        [1, -2, 1]
-    ]
 
     gains = [args.Kii, args.Ki, args.Kp, args.Kd, args.Kdd]
     w = 2*pi*args.sample_period
@@ -260,7 +265,7 @@ def _main():
 
     # Calculate the IIR coefficients for the filter.
     coefficients = filters[args.filter_type].coefficients(args)
-
+    print(coefficients)
     # The feed-forward gain of the IIR filter is the summation
     # of the "b" components of the filter.
     forward_gain = sum(coefficients[:3])
