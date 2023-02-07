@@ -35,7 +35,9 @@ app = QtGui.QApplication([])
 p = pg.plot()
 p.setWindowTitle('live plot')
 curve = p.plot()
+curve2 = p.plot()
 data = [0]*40000
+data2 = [1]*40000
 viewbox = p.getPlotItem().getViewBox()
 
 
@@ -173,11 +175,15 @@ async def measure(stream, duration):
             stat.bytes += frame.size()
             # test conversion
             newData = frame.to_si()["adc"][0]
-            #np.mean(arr.reshape(-1, 3), axis=1)
+            newData2 = frame.to_si()["dac"][0]
             newData = np.mean(newData.reshape(-1,11), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
+            newData2 = np.mean(newData2.reshape(-1,11), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
             for element in newData:
                 data.append(element)
                 data.pop(0)
+            for element in newData2:
+                data2.append(element)
+                data2.pop(0)
 
     try:
         await asyncio.wait_for(_record(), timeout=duration)
@@ -218,7 +224,9 @@ async def main():
 def update():
     global curve, data, viewbox
     xdata = np.array(data, dtype='float64')
+    xdata2 = np.array(data2, dtype='float64')
     curve.setData(xdata)
+    curve2.setData(xdata2)
     app.processEvents()
 
 
