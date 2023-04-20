@@ -34,10 +34,10 @@ Trace = namedtuple("Trace", "values scale label")
 app = QtGui.QApplication([])
 p = pg.plot()
 p.setWindowTitle('live plot')
-curve = p.plot()
-curve2 = p.plot()
-data = [0]*40000
-data2 = [1]*40000
+curve = p.plot(pen="r")
+curve2 = p.plot(pen="g")
+data1 = [0]*5000
+data2 = [1]*5000
 viewbox = p.getPlotItem().getViewBox()
 
 
@@ -154,6 +154,31 @@ class StabilizerStream(asyncio.DatagramProtocol):
         self.queue.put_nowait(frame)
 
 
+
+# in_file = open("1027017276packet.bytes", "rb") # opening for [r]eading as [b]inary
+# data = in_file.read()
+# header_fmt = struct.Struct("<HBBI")
+# header = namedtuple("Header", "magic format_id batch_size sequence")._make(struct.Struct("<HBBI").unpack_from(data))
+# parsers = {
+#     AdcDac.format_id: AdcDac,
+# }
+# if header.magic != 0x057B:
+#     logger.warning("Bad frame magic: %#04x, ignoring", header.magic)
+#     print("magic")
+# try:
+#     parser = parsers[header.format_id]
+# except KeyError:
+#     logger.warning("No parser for format %s, ignoring", header.format_id)
+#     print("parser")
+# frame = parser(header, data[header_fmt.size:])
+
+# print(frame.body)
+# print(frame.to_mu())
+
+
+
+
+
 async def measure(stream, duration):
     """Measure throughput and loss of stream reception"""
     @dataclass
@@ -176,11 +201,11 @@ async def measure(stream, duration):
             # test conversion
             newData = frame.to_si()["adc"][0]
             newData2 = frame.to_si()["dac"][0]
-            newData = np.mean(newData.reshape(-1,11), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
-            newData2 = np.mean(newData2.reshape(-1,11), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
+            newData = np.mean(newData.reshape(-1,176), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
+            newData2 = np.mean(newData2.reshape(-1,176), axis=1)#has to be divisor of 176? 176=11*2*2*2*2
             for element in newData:
-                data.append(element)
-                data.pop(0)
+                data1.append(element)
+                data1.pop(0)
             for element in newData2:
                 data2.append(element)
                 data2.pop(0)
@@ -205,13 +230,13 @@ async def measure(stream, duration):
 async def main():
     """Test CLI"""
     parser = argparse.ArgumentParser(description="Stabilizer streaming demo")
-    parser.add_argument("--port", type=int, default=9293,
+    parser.add_argument("--port", type=int, default=1883,
                         help="Local port to listen on")
     parser.add_argument("--host", default="0.0.0.0",
                         help="Local address to listen on")
     parser.add_argument("--maxsize", type=int, default=1,
                         help="Frame queue size")
-    parser.add_argument("--duration", type=float, default=60*10,
+    parser.add_argument("--duration", type=float, default=1000,
                         help="Test duration")
     args = parser.parse_args()
 
@@ -222,11 +247,11 @@ async def main():
     
 
 def update():
-    global curve, data, viewbox
-    xdata = np.array(data, dtype='float64')
+    global curve, data1, data2, viewbox
+    xdata = np.array(data1, dtype='float64')
     xdata2 = np.array(data2, dtype='float64')
-    curve.setData(xdata)
-    curve2.setData(xdata2)
+    curve.setData(xdata[0::3])
+    curve2.setData(xdata2[0::3])# - np.mean(xdata2[0::10]))
     app.processEvents()
 
 
