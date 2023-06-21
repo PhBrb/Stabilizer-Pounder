@@ -1,3 +1,13 @@
+Playground to play with Stabilizer and Pounder hardware, cloned from https://github.com/quartiq/stabilizer/releases/tag/v0.7.0
+
+
+
+<br><br><br>
+---------------------------------------------------------
+<br><br><br>
+
+
+
 [![QUARTIQ Matrix Chat](https://img.shields.io/matrix/quartiq:matrix.org)](https://matrix.to/#/#quartiq:matrix.org)
 [![Continuous Integration](https://github.com/quartiq/stabilizer/actions/workflows/ci.yml/badge.svg)](https://github.com/quartiq/stabilizer/actions/workflows/ci.yml)
 [![Stabilizer HITL [Nightly]](https://github.com/quartiq/hitl/actions/workflows/stabilizer-nightly.yml/badge.svg)](https://github.com/quartiq/hitl/actions/workflows/stabilizer-nightly.yml)
