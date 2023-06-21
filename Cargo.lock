@@ -370,7 +370,7 @@ version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f46a331530b5d31b12f1f0eeed2e6bfbfddcaf12f78d86e2b1e329c852e4946"
 dependencies = [
- "miniconf",
+ "miniconf 0.5.0",
  "num-complex 0.4.2",
  "num-traits",
  "serde",
@@ -459,10 +459,36 @@ dependencies = [
  "derive_miniconf",
  "heapless",
  "log",
- "minimq",
+ "minimq 0.5.3",
  "serde",
- "serde-json-core",
- "smlang",
+ "serde-json-core 0.4.0",
+ "smlang 0.4.2",
+]
+
+[[package]]
+name = "miniconf"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07df30ef660fa32d54836743fbdf8208747a559fc4296ec07dc12b6df65343b2"
+dependencies = [
+ "heapless",
+ "log",
+ "miniconf_derive",
+ "minimq 0.6.2",
+ "serde",
+ "serde-json-core 0.5.0",
+ "smlang 0.6.0",
+]
+
+[[package]]
+name = "miniconf_derive"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e142f4961afed7b940e84903e6f886b35d10017f15aafc960556f053f6a8fa35"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -476,7 +502,23 @@ dependencies = [
  "embedded-time",
  "enum-iterator 0.6.0",
  "heapless",
- "smlang",
+ "smlang 0.4.2",
+]
+
+[[package]]
+name = "minimq"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b222dbc2667cc69a2d9acdf5c24280c49233295eda3a767f6ddfb4040f5cc80c"
+dependencies = [
+ "bit_field",
+ "embedded-nal",
+ "embedded-time",
+ "heapless",
+ "num_enum",
+ "serde",
+ "smlang 0.6.0",
+ "varint-rs",
 ]
 
 [[package]]
@@ -817,6 +859,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-json-core"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58ec3c8fe427f45ee3aaa0ebb9f0d9ab8ae9ad05d12047fe7249ae5ea9374ff0"
+dependencies = [
+ "heapless",
+ "ryu",
+ "serde",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.143"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -845,7 +898,16 @@ version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75f6a641648330c38cc8e0574ddc03807617dc8f27f3005c368522769f818896"
 dependencies = [
- "smlang-macros",
+ "smlang-macros 0.2.1",
+]
+
+[[package]]
+name = "smlang"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b62b263177e999fea25b50588d4413d1686f070d6fe986c3b2e5a7a4d2c532e9"
+dependencies = [
+ "smlang-macros 0.6.0",
 ]
 
 [[package]]
@@ -853,6 +915,17 @@ name = "smlang-macros"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac6db7d915f8478423db4889a8933f0f557ec345b3e94495800d7b32b1ac7250"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "smlang-macros"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c682cc05cd4c0dce61656d654b1aef023e7d4b27b58834af94b31391df081469"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -909,8 +982,8 @@ dependencies = [
  "lm75",
  "log",
  "mcp230xx",
- "miniconf",
- "minimq",
+ "miniconf 0.6.3",
+ "minimq 0.5.3",
  "mono-clock",
  "mutex-trait",
  "nb 1.0.0",
@@ -919,7 +992,7 @@ dependencies = [
  "rtt-logger",
  "rtt-target",
  "serde",
- "serde-json-core",
+ "serde-json-core 0.4.0",
  "shared-bus",
  "smoltcp-nal",
  "spin",
@@ -1003,6 +1076,12 @@ name = "unicode-ident"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4f5b37a154999a8f3f98cc23a628d850e154479cd94decf3414696e12e31aaf"
+
+[[package]]
+name = "varint-rs"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f54a172d0620933a27a4360d3db3e2ae0dd6cceae9730751a036bbf182c4b23"
 
 [[package]]
 name = "vcell"
